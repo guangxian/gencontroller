@@ -1,7 +1,6 @@
 package io.github.guangxian.core;
 
 import com.squareup.javapoet.*;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.core.io.ClassPathResource;
 
