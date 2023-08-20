@@ -32,6 +32,45 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <!-- license信息 -->
+  <licenses>
+    <license>
+      <name>The Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+  <!-- 开发人员信息 -->
+  <developers>
+    <developer>
+      <name>MengXiang</name>
+      <email>89360944@qq.com</email>
+      <roles>
+        <role>developer</role>
+      </roles>
+      <timezone>+8</timezone>
+    </developer>
+  </developers>
+  <!-- 项目仓库信息 -->
+  <scm>
+    <connection>scm:git:https://github.com/guangxian/gencontroller.git</connection>
+    <developerConnection>scm:git:https://github.com/guangxian/gencontroller.git</developerConnection>
+    <url>https://github.com/guangxian/gencontroller</url>
+    <tag>v${project.version}</tag>
+  </scm>
+  <distributionManagement>
+    <snapshotRepository>
+      <!-- 这个id需要和settings.xml里面的id一致 -->
+      <id>oss</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+    </snapshotRepository>
+    <repository>
+      <!-- 这个id需要和settings.xml里面的id一致 -->
+      <id>oss</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+  </distributionManagement>
+
   <build>
     <plugins>
       <plugin>
@@ -46,6 +85,60 @@
             <arg>-proc:none</arg>
           </compilerArgs>
         </configuration>
+      </plugin>
+      <!-- Source -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>2.2.1</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>jar-no-fork</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Javadoc工具 -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.10.4</version>
+        <configuration>
+          <additionalJOptions>
+            <additionalJOption>-Xdoclint:none</additionalJOption>
+          </additionalJOptions>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- GPG -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <version>1.6</version>
+        <configuration>
+          <gpgArguments>
+            <arg>--pinentry-mode</arg>
+            <arg>loopback</arg>
+          </gpgArguments>
+        </configuration>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
