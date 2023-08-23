@@ -8,6 +8,7 @@ import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.util.Elements;
+import javax.tools.Diagnostic;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -81,13 +82,13 @@ public class MyProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         Set<? extends Element> elementsAnnotatedWith = roundEnv.getElementsAnnotatedWith(GenController.class);
-
-        // 获取yml配置
+        messager.printMessage(Diagnostic.Kind.NOTE, r("GenController.class.size = ") + elementsAnnotatedWith.size());
+        // get YML
         YamlPropertiesFactoryBean yamlProFb = new YamlPropertiesFactoryBean();
         yamlProFb.setResources(new ClassPathResource("application.yml"));
         Properties properties = yamlProFb.getObject();
 
-        boolean enable = properties.get("stc.enable") != null ? Boolean.parseBoolean(properties.get("stc.enable").toString()) : true;
+        boolean enable = properties.get("gen-controller.enable") != null ? Boolean.parseBoolean(properties.get("gen-controller.enable").toString()) : true;
         if (!elementsAnnotatedWith.isEmpty() && enable) {
             Map<String, TypeSpec.Builder> typeSpecBuilders = new HashMap<>();
             for (Element element : elementsAnnotatedWith) {
@@ -101,11 +102,16 @@ public class MyProcessor extends AbstractProcessor {
                         .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
                         .build());
 
+                // declare annotations
+                List<AnnotationSpec> annotationSpecs = new ArrayList<>();
+                annotationSpecs.add(AnnotationSpec.builder(ClassName.bestGuess("org.springframework.web.bind.annotation.RestController")).build());
+
                 // if same controller name, then add fields and methods
                 if (typeSpecBuilders.containsKey(element.getAnnotation(GenController.class).name())) {
                     TypeSpec.Builder builder = typeSpecBuilders.get(element.getAnnotation(GenController.class).name());
                     fieldSpecs.addAll(builder.fieldSpecs);
                     methodSpecs.addAll(builder.methodSpecs);
+                    annotationSpecs.addAll(builder.annotations);
                 }
 
                 // reset construction by fields
@@ -118,29 +124,45 @@ public class MyProcessor extends AbstractProcessor {
                 }
                 methodSpecs.add(constructorBuilder.build());
 
+                // add annotation
+                if (!"".equals(element.getAnnotation(GenController.class).springDocTagName())) {
+                    annotationSpecs.add(AnnotationSpec.builder(ClassName.bestGuess("io.swagger.v3.oas.annotations.tags.Tag"))
+                            .addMember("name", "$S", element.getAnnotation(GenController.class).springDocTagName())
+                            .addMember("description", "$S", element.getAnnotation(GenController.class).springDocTagDescription())
+                            .build());
+                }
+                // remove duplicate
+                annotationSpecs = annotationSpecs.stream()
+                        .collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(o -> o.type.toString()))), ArrayList::new));
+
                 // build class
+                typeSpecBuilder.addModifiers(Modifier.PUBLIC);
                 typeSpecBuilder.addFields(fieldSpecs);
                 typeSpecBuilder.addMethods(methodSpecs);
-                typeSpecBuilder.addAnnotation(ClassName.bestGuess("org.springframework.web.bind.annotation.RestController"));
-                typeSpecBuilder.addModifiers(Modifier.PUBLIC);
+                typeSpecBuilder.addAnnotations(annotationSpecs);
+
                 typeSpecBuilders.put(element.getAnnotation(GenController.class).name(), typeSpecBuilder);
+
+//                messager.printMessage(Diagnostic.Kind.NOTE, r("::::::::::::::::") + parameter.toString());
             }
 
-            typeSpecBuilders.forEach((k, v) -> {
-                TypeSpec build = v.build();
+            if (typeSpecBuilders.size() > 0) {
+                if (properties.get("gen-controller.package-path") != null) {
+                    typeSpecBuilders.forEach((k, v) -> {
+                        TypeSpec build = v.build();
 
-                try {
-                    JavaFile javaFile = JavaFile.builder("com.example.web.controller", build)
-                            .addFileComment(" This codes are generated automatically. Do not modify!")
-                            .build();
-                    javaFile.writeTo(filer);
-                } catch (IOException e) {
-                    e.printStackTrace();
+                        try {
+                            JavaFile javaFile = JavaFile.builder(properties.get("gen-controller.package-path").toString(), build)
+                                    .addFileComment(" This codes are generated automatically. Do not modify!")
+                                    .build();
+                            javaFile.writeTo(filer);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
                 }
-            });
+            }
         }
-
-
         return true;
     }
 
@@ -151,21 +173,33 @@ public class MyProcessor extends AbstractProcessor {
             ExecutableElement methodElement = (ExecutableElement) element;
             String[] ignoreMethods = new String[] {"<init>", "main"};
 
+            if (Arrays.stream(ignoreMethods).collect(Collectors.toList()).contains(methodElement.getSimpleName().toString())) {
+                continue;
+            }
+            if (!classElement.getClass().isInterface() && !"public".equals(methodElement.getModifiers().stream().collect(Collectors.toList()).get(0).toString())) {
+                continue;
+            }
+            if (methodElement.getAnnotation(GenControllerMethod.class) != null && methodElement.getAnnotation(GenControllerMethod.class).ignore()) {
+                continue;
+            }
+
             // 排除构造函数、mian方法，只匹配public开头的方法
-            if (!Arrays.stream(ignoreMethods).collect(Collectors.toList()).contains(methodElement.getSimpleName().toString())
-                    && "public".equals(methodElement.getModifiers().stream().collect(Collectors.toList()).get(0).toString())) {
+//            if (!Arrays.stream(ignoreMethods).toList().contains(methodElement.getSimpleName().toString())
+//                    && "public".equals(methodElement.getModifiers().stream().toList().get(0).toString())
+//                   ) {
 
                 // 初始化方法
                 MethodSpec.Builder builder = MethodSpec.methodBuilder(methodElement.getSimpleName().toString());
+                builder.addModifiers(Modifier.PUBLIC);
 
                 // 添加PostMapping注解
                 String mapping = "/" + MyUtil.toSimpleName(classElement.getAnnotation(GenController.class).name(), true, "-") + "/" + MyUtil.toSimpleName(methodElement.getSimpleName().toString(), true, "-");
                 builder.addAnnotation(AnnotationSpec.builder(ClassName.bestGuess("org.springframework.web.bind.annotation.PostMapping")).addMember("value", "$S", mapping).build());
-                StcMethod stcMethod = methodElement.getAnnotation(StcMethod.class);
-                if (stcMethod != null) {
+                GenControllerMethod GenControllerMethod = methodElement.getAnnotation(GenControllerMethod.class);
+                if (GenControllerMethod != null) {
                     builder.addAnnotation(AnnotationSpec.builder(ClassName.bestGuess("io.swagger.v3.oas.annotations.Operation"))
-                            .addMember("summary", "$S", stcMethod.summary())
-                            .addMember("description", "$S", stcMethod.description())
+                            .addMember("summary", "$S", GenControllerMethod.springDocOperationSummary())
+                            .addMember("description", "$S", GenControllerMethod.springDocOperationDescription())
                             .build());
                 }
 
@@ -189,8 +223,8 @@ public class MyProcessor extends AbstractProcessor {
                 // 添加出参参数
                 // response-parameterized
                 // response-return
-                String responseParameter = "stc.response-parameter";
-                String responseReturnExpression = "stc.response-return-expression";
+                String responseParameter = "gen-controller.response-parameter";
+                String responseReturnExpression = "gen-controller.response-return-expression";
                 if (properties.get(responseParameter) != null) {
                     ParameterizedTypeName parameterizedTypeName = ParameterizedTypeName.get(
                             ClassName.bestGuess(properties.get(responseParameter).toString()),
@@ -208,11 +242,14 @@ public class MyProcessor extends AbstractProcessor {
                     builder.addStatement("return " + properties.get(responseReturnExpression).toString(), "response");
                 } else {
                     builder.returns(ClassName.bestGuess(methodElement.getReturnType().toString()));
-                    builder.addStatement("return $L.$L(request)", MyUtil.toSimpleName(classElement.getSimpleName().toString(), true, null), methodElement.getSimpleName().toString());
+                    builder.addStatement("return $L.$L($L)",
+                            MyUtil.toSimpleName(classElement.getSimpleName().toString(), true, null),
+                            methodElement.getSimpleName().toString(),
+                            parameterSpecs.get(0).name);
                 }
 
                 methodSpecs.add(builder.build());
-            }
+//            }
         }
         return methodSpecs;
     }

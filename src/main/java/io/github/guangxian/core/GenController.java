@@ -9,13 +9,15 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface GenController {
     String url() default "";;
-    String tag() default "";
-    String controller() default "";;
-
     /**
      * 例子
      * 若name = testUser，则url = /test-user， controller类名 = TestUserController
      * @return
      */
     String name() default "";
+    String packagePath() default "";
+    String springDocTagName() default "";
+    String springDocTagDescription() default "";
+    String sdf() default "";
+
 }

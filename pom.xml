@@ -4,14 +4,18 @@
 
   <groupId>io.github.guangxian</groupId>
   <artifactId>gencontroller</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0.0</version>
   <packaging>jar</packaging>
 
   <name>gencontroller</name>
-  <url>http://maven.apache.org</url>
+  <url>https://github.com/guangxian/gencontroller</url>
+  <description>Generate controller based on service, during compilation</description>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <gpg.passphrase>12345678</gpg.passphrase>
+    <gpg.keyname>79DFA21E73641267C43AA2392B0897CC6DCC4155</gpg.keyname>
+    <gpg.homedir>C:/Users/11/AppData/Roaming/gnupg</gpg.homedir>
   </properties>
 
   <dependencies>
@@ -61,13 +65,13 @@
   <distributionManagement>
     <snapshotRepository>
       <!-- 这个id需要和settings.xml里面的id一致 -->
-      <id>oss</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+      <id>ossrh</id>
+      <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
     </snapshotRepository>
     <repository>
       <!-- 这个id需要和settings.xml里面的id一致 -->
-      <id>oss</id>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+      <id>ossrh</id>
+      <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
     </repository>
   </distributionManagement>
 
@@ -86,6 +90,17 @@
           </compilerArgs>
         </configuration>
       </plugin>
+<!--      <plugin>-->
+<!--        <groupId>org.sonatype.plugins</groupId>-->
+<!--        <artifactId>nexus-staging-maven-plugin</artifactId>-->
+<!--        <version>1.6.7</version>-->
+<!--        <extensions>true</extensions>-->
+<!--        <configuration>-->
+<!--          <serverId>ossrh</serverId>-->
+<!--          <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>-->
+<!--          <autoReleaseAfterClose>true</autoReleaseAfterClose>-->
+<!--        </configuration>-->
+<!--      </plugin>-->
       <!-- Source -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
