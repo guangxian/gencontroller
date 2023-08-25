@@ -4,7 +4,7 @@
 
   <groupId>io.github.guangxian</groupId>
   <artifactId>gencontroller</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
   <packaging>jar</packaging>
 
   <name>gencontroller</name>
@@ -19,11 +19,6 @@
   </properties>
 
   <dependencies>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-beans</artifactId>
-      <version>6.0.11</version>
-    </dependency>
     <dependency>
       <groupId>com.squareup</groupId>
       <artifactId>javapoet</artifactId>
