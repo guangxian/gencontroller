@@ -61,28 +61,28 @@ public class MyUtil {
     }
 
 
-    public static MethodSpec.Builder docHandler(MethodSpec.Builder builder, ApiMethod method) {
-        if (method.getDoc() != null) {
-            builder.addAnnotation(AnnotationSpec.builder(ClassName.bestGuess("io.swagger.v3.oas.annotations.Operation"))
-                    .addMember("summary", "$S", method.getDoc().getSummary())
-                    .addMember("description", "$S", method.getDoc().getDescription())
-                    .build());
-        }
-        return builder;
-    }
+//    public static MethodSpec.Builder docHandler(MethodSpec.Builder builder, ApiMethod method) {
+//        if (method.getDoc() != null) {
+//            builder.addAnnotation(AnnotationSpec.builder(ClassName.bestGuess("io.swagger.v3.oas.annotations.Operation"))
+//                    .addMember("summary", "$S", method.getDoc().getSummary())
+//                    .addMember("description", "$S", method.getDoc().getDescription())
+//                    .build());
+//        }
+//        return builder;
+//    }
 
 
 
 
 
-    public static List<? extends Element>  removeInvalidMethod(List<? extends Element> enclosedElements) {
-        String[] ignoreMethods = new String[] {"<init>", "main"};
-        enclosedElements.removeIf(v ->
-                !Arrays.stream(ignoreMethods).toList().contains(v.getSimpleName().toString())
-                && "public".equals(v.getModifiers().stream().toList().get(0).toString())
-        );
-        return enclosedElements;
-    }
+//    public static List<? extends Element>  removeInvalidMethod(List<? extends Element> enclosedElements) {
+//        String[] ignoreMethods = new String[] {"<init>", "main"};
+//        enclosedElements.removeIf(v ->
+//                !Arrays.stream(ignoreMethods).toList().contains(v.getSimpleName().toString())
+//                && "public".equals(v.getModifiers().stream().toList().get(0).toString())
+//        );
+//        return enclosedElements;
+//    }
 
 
 
