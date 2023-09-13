@@ -1,4 +1,4 @@
-package io.github.guangxian.core;
+package io.github.guangxian.gencontroller.core;
 
 import com.squareup.javapoet.*;
 
@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@SupportedAnnotationTypes(value = {"io.github.guangxian.core.GenController", "io.github.guangxian.core.GenControllerConfig"})
+@SupportedAnnotationTypes(value = {"io.github.guangxian.gencontroller.core.GenController", "io.github.guangxian.gencontroller.core.GenControllerConfig"})
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class MyProcessor extends AbstractProcessor {
     private Filer filer;

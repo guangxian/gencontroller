@@ -1,4 +1,4 @@
-package io.github.guangxian.core;
+package io.github.guangxian.gencontroller.core;
 
 public class ApiMethod {
     private String name;

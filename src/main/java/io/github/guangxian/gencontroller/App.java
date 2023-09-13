@@ -1,4 +1,4 @@
-package io.github.guangxian;
+package io.github.guangxian.gencontroller;
 
 /**
  * Hello world!

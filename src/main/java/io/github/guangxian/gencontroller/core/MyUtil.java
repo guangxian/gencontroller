@@ -1,12 +1,4 @@
-package io.github.guangxian.core;
-
-import com.squareup.javapoet.AnnotationSpec;
-import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.MethodSpec;
-
-import javax.lang.model.element.Element;
-import java.util.Arrays;
-import java.util.List;
+package io.github.guangxian.gencontroller.core;
 
 public class MyUtil {
     public static String toSimpleName(String name, boolean lower, String split) {

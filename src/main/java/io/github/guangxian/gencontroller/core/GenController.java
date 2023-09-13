@@ -1,4 +1,4 @@
-package io.github.guangxian.core;
+package io.github.guangxian.gencontroller.core;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
